@@ -1,31 +1,28 @@
 
+# © 2024 Google LLC.
+# SPDX-License-Identifier: Apache-2.0
 homepage: "https://fitconsent.com"
 documentation: "https://fitconsent.com/documentation"
 versions:
   - sha: "b3f3e7951c3605a967527183e206037b5d848737" # A placeholder SHA
     changeNotes: "Initial release of the FitConsent CMP Tag."
 # Metadata for the Community Template Gallery
-name: "FitConsent CMP"
-description: "The official tag for FitConsent, a Consent Management Platform that simplifies GDPR and CCPA compliance with an AI-powered, easy-to-install banner."
-companyName: "DIGITLOAD"
-tags:
-  - "Consent Management"
-  - "GDPR"
-  - "CCPA"
-  - "Privacy"
-# Path to the icon file for this template
-icon: "icon.png"
-# Information for the vendor
-vendor:
-  name: "FitConsent"
-  url: "https://fitconsent.com"
-  githubUrl: "https://github.com/fitconsent" # Placeholder URL
-# List of categories for the Community Template Gallery
-categories:
-  - "Miscellaneous"
-# Whether this template is subject to the Community Template Gallery terms
-# of service.
-isGoogleAnalyticsEvents: false
+info:
+  name: "FitConsent CMP"
+  description: "The official tag for FitConsent, a Consent Management Platform that simplifies GDPR and CCPA compliance with an AI-powered, easy-to-install banner."
+  vendorName: "DIGITLOAD"
+  categories:
+    - "MISCELLANEOUS"
+  icon: "icon.png"
+
+# Whether this template has unowned (non-Google) code.
+unowned: true
+
+# Template Permissions
+permissions:
+  inject_script:
+    - "https://fitconsent.com/api/banner*"
+
 # Template parameter definitions
 params:
   - name: "websiteId"
@@ -35,10 +32,3 @@ params:
     help: "Enter the Website ID from your FitConsent dashboard."
     valueValidators:
       - "nonEmpty"
-
-# Whether this template has unowned (non-Google) code.
-containsUnownedCode: true
-# Template Permissions
-permissions:
-  inject_script:
-    - "https://fitconsent.com/*"

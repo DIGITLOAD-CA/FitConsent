@@ -1,79 +1,63 @@
-___INFO___
 
+___INFO___
+// The ___INFO___ block contains metadata about the template.
 {
   "type": "TAG",
-  "id": "FitConsent_GTM_Template",
-  "version": "1.0.0",
-  "name": "FitConsent Banner Loader",
-  "description": "Loads the FitConsent banner script to manage user consent on your website.",
-  "brand": {
-    "id": "FitConsent_Brand",
-    "name": "FitConsent",
-    "url": "https://fitconsent.com",
-    "vendor": "DIGITLOAD"
-  },
-  "categories": [
-    "Miscellaneous"
-  ],
-  "tags": [
-    "Consent Management",
-    "GDPR",
-    "CCPA",
-    "Privacy"
-  ],
-  "entry_point": "main"
+  "name": "FitConsent CMP",
+  "version": 1,
+  "description": "Loads the FitConsent banner script to manage user consent.",
+  "official": false,
+  "containerContext": [
+    "WEB"
+  ]
 }
 
 ___TEMPLATE_PARAMETERS___
-
+// The ___TEMPLATE_PARAMETERS___ block defines the fields that will be displayed in the GTM UI.
 [
   {
     "name": "websiteId",
     "type": "TEXT",
-    "display_name": "FitConsent Website ID",
-    "simple_value_type": true,
-    "help": "Enter the Website ID from your FitConsent dashboard.",
-    "validators": [
+    "displayName": "FitConsent Website ID",
+    "simpleValueType": true,
+    "valueValidators": [
       {
         "type": "NON_EMPTY"
       }
-    ]
+    ],
+    "help": "Enter the Website ID from your FitConsent dashboard."
   }
 ]
 
 ___SANDBOXED_JS_FOR_WEB_TEMPLATE___
-
+// This is the sandboxed JavaScript that will be executed.
+// It uses GTM APIs to inject the FitConsent script.
 const injectScript = require('injectScript');
 const log = require('logToConsole');
 
-const websiteId = data.websiteId;
+const scriptUrl = 'https://fitconsent.com/api/banner?websiteId=' + data.websiteId;
 
-if (!websiteId) {
-  log('FitConsent Error: Website ID is not set.');
-  data.gtmOnFailure();
-  return;
-}
+log('FitConsent: Injecting banner script for Website ID:', data.websiteId);
 
-const scriptUrl = 'https://fitconsent.com/api/banner?websiteId=' + encodeUriComponent(websiteId);
-
-log('FitConsent: Injecting script for Website ID:', websiteId);
-
-injectScript(scriptUrl, data.gtmOnSuccess, data.gtmOnFailure, 'fitconsent-banner-script');
+injectScript(
+  scriptUrl,
+  data.gtmOnSuccess,
+  data.gtmOnFailure,
+  data.websiteId // This serves as the cache key for the script injection.
+);
 
 
 ___PERMISSIONS___
+// The ___PERMISSIONS___ block declares what the template is allowed to do.
+{
+  "inject_script": [
+    {
+      "url": "https://fitconsent.com/api/banner*"
+    }
+  ]
+}
 
-[
-  {
-    "instance": {
-      "key": "inject_script",
-      "value": "https://fitconsent.com/*"
-    },
-    "client_id": "sandboxed_js",
-    "type": "INJECT_SCRIPT"
-  }
-]
 
 ___NOTES___
-
-v1.0.0: Initial release of the FitConsent Banner Loader tag.
+// Use this section for any notes about the template.
+"Initial release. Loads the FitConsent banner script."

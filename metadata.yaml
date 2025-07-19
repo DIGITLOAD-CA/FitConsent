@@ -3,7 +3,7 @@
 homepage: "https://fitconsent.com"
 documentation: "https://fitconsent.com/documentation"
 versions:
-  - sha: "b3f3e7951c3605a967527183e206037b5d848737" # A placeholder SHA
+  - sha: "fc14e70e53b8b44f10f2d366fec6fea1b9551a7a" 
     changeNotes: "Initial release of the FitConsent CMP Tag."
 # Metadata for the Community Template Gallery
 info:

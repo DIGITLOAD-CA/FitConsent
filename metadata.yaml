@@ -1,3 +1,4 @@
+
 homepage: "https://fitconsent.com"
 documentation: "https://fitconsent.com/documentation"
 versions:
@@ -27,18 +28,6 @@ categories:
 isGoogleAnalyticsEvents: false
 # Template parameter definitions
 params:
-  - name: "type"
-    displayName: "Tag Type"
-    type: "SELECT"
-    simpleValueType: true
-    selectItems:
-      - value: "bannerLoader"
-        displayName: "FitConsent Banner Loader"
-      - value: "consentDefault"
-        displayName: "Google Consent Default"
-    help: "Choose 'Banner Loader' to load the FitConsent script, or 'Google Consent Default' to set the initial denied state."
-    valueValidators:
-      - "nonEmpty"
   - name: "websiteId"
     displayName: "FitConsent Website ID"
     type: "TEXT"
@@ -46,9 +35,6 @@ params:
     help: "Enter the Website ID from your FitConsent dashboard."
     valueValidators:
       - "nonEmpty"
-    enablingConditions:
-      - param: "type"
-        is: "bannerLoader"
 
 # Whether this template has unowned (non-Google) code.
 containsUnownedCode: true

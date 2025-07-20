@@ -1,33 +1,45 @@
 # © 2024 Google LLC.
 # SPDX-License-Identifier: Apache-2.0
+
 homepage: "https://fitconsent.com"
 documentation: "https://fitconsent.com/documentation"
 versions:
-  - sha: "fc14e70e53b8b44f10f2d366fec6fea1b9551a7a" 
-    changeNotes: "Initial release of the FitConsent CMP Tag."
+  - sha: "PASTE_YOUR_REAL_COMMIT_HASH_HERE"
+    changeNotes: "Initial release of the FitConsent CMP Tag with a Tag Type selector."
+
 # Metadata for the Community Template Gallery
 info:
-  name: "FitConsent CMP"
+  name: "FitConsent"
   description: "The official tag for FitConsent, a Consent Management Platform that simplifies GDPR and CCPA compliance with an AI-powered, easy-to-install banner."
   vendorName: "DIGITLOAD"
   categories:
-    - "MISCELLANEOUS"
-  icon: "icon.png"
+    - MISCELLANEOUS
+  icon: icon.png
 
 # Whether this template has unowned (non-Google) code.
 unowned: true
 
-# Template Permissions
-permissions:
-  inject_script:
-    - "https://fitconsent.com/api/banner*"
-
 # Template parameter definitions
 params:
-  - name: "websiteId"
+  - name: tagType
+    displayName: "Tag Type"
+    type: SELECT
+    selectItems:
+      - value: "BANNER_LOADER"
+        displayName: "FitConsent Banner Loader"
+      - value: "CONSENT_DEFAULT"
+        displayName: "Google Consent Default"
+    simpleValueType: true
+    defaultValue: "BANNER_LOADER"
+    help: "Select 'Google Consent Default' to set the default denied state, or 'Banner Loader' to load the consent banner."
+
+  - name: websiteId
     displayName: "FitConsent Website ID"
-    type: "TEXT"
+    type: TEXT
     simpleValueType: true
     help: "Enter the Website ID from your FitConsent dashboard."
     valueValidators:
-      - "nonEmpty"
+      - nonEmpty
+    enablingConditions:
+      - param: tagType
+        value: "BANNER_LOADER"

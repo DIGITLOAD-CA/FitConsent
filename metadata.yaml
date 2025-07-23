@@ -4,7 +4,7 @@
 homepage: "https://fitconsent.com"
 documentation: "https://fitconsent.com/documentation"
 versions:
-  - sha: "PASTE_YOUR_REAL_COMMIT_HASH_HERE"
+  - sha: 2e25b048d5a331288801a445d733e1b7ad51a4a9
     changeNotes: "Initial release of the FitConsent CMP Tag with a Tag Type selector."
 
 # Metadata for the Community Template Gallery

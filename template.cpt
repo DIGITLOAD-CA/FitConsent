@@ -39,7 +39,7 @@ ___TEMPLATE_PARAMETERS___
         "displayName": "FitConsent Website ID",
         "type": "TEXT",
         "simpleValueType": true,
-        "help": "Enter the Website ID from your FitConsent dashboard.",
+        "help": "Enter your Website ID from your FitConsent dashboard.",
         "valueValidators": [
             {
                 "type": "NON_EMPTY"

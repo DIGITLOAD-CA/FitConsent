@@ -1,11 +1,9 @@
-# © 2024 Google LLC.
-# SPDX-License-Identifier: Apache-2.0
 
 homepage: "https://fitconsent.com"
 documentation: "https://fitconsent.com/documentation"
 versions:
-  - sha: 0d955393267e0658b10cc87b97809b9ac168ec23
-    changeNotes: "Initial release of the FitConsent CMP Tag with a Tag Type selector."
+  - sha: "PASTE_YOUR_REAL_COMMIT_HASH_HERE"
+    changeNotes: "Initial release of the FitConsent Tag."
 
 # Metadata for the Community Template Gallery
 info:
@@ -25,13 +23,14 @@ params:
     displayName: "Tag Type"
     type: SELECT
     selectItems:
-      - value: "BANNER_LOADER"
+      - value: bannerLoader
         displayName: "FitConsent Banner Loader"
-      - value: "CONSENT_DEFAULT"
+      - value: consentDefault
         displayName: "Google Consent Default"
     simpleValueType: true
-    defaultValue: "BANNER_LOADER"
-    help: "Select 'Google Consent Default' to set the default denied state, or 'Banner Loader' to load the consent banner."
+    help: "Select the type of tag to create."
+    valueValidators:
+      - nonEmpty
 
   - name: websiteId
     displayName: "FitConsent Website ID"
@@ -42,4 +41,4 @@ params:
       - nonEmpty
     enablingConditions:
       - param: tagType
-        value: "BANNER_LOADER"
+        value: bannerLoader

@@ -2,7 +2,7 @@
 homepage: "https://fitconsent.com"
 documentation: "https://fitconsent.com/documentation"
 versions:
-  - sha: "PASTE_YOUR_REAL_COMMIT_HASH_HERE"
+  - sha: 24530489f28fddef986830d420988c2bf51da533
     changeNotes: "Initial release of the FitConsent Tag."
 
 # Metadata for the Community Template Gallery

@@ -130,6 +130,146 @@ ___WEB_PERMISSIONS___
     },
     "isRequired": true
   },
+   {
+    "instance": {
+      "key": {
+        "publicId": "read_storage",
+        "versionId": "1"
+      },
+      "param": [
+        {
+          "key": "key",
+          "value": {
+            "type": "CONSTANT_STRING",
+            "string": "gtm.allowlist"
+          }
+        },
+        {
+          "key": "read",
+          "value": {
+            "type": "CONSTANT_STRING",
+            "string": "e"
+          }
+        }
+      ]
+    },
+    "clientAnnotations": {
+      "isEditedByUser": true
+    },
+    "isRequired": false
+  },
+  {
+    "instance": {
+      "key": {
+        "publicId": "write_storage",
+        "versionId": "1"
+      },
+      "param": [
+        {
+          "key": "key",
+          "value": {
+            "type": "CONSTANT_STRING",
+            "string": "gtm.allowlist"
+          }
+        },
+        {
+          "key": "write",
+          "value": {
+            "type": "CONSTANT_STRING",
+            "string": "e"
+          }
+        }
+      ]
+    },
+    "clientAnnotations": {
+      "isEditedByUser": true
+    },
+    "isRequired": false
+  },
+  {
+    "instance": {
+      "key": {
+        "publicId": "access_consent",
+        "versionId": "1"
+      },
+      "param": [
+        {
+          "key": "write",
+          "value": {
+            "type": "CONSTANT_STRING",
+            "string": "ad_storage"
+          }
+        }
+      ]
+    },
+    "clientAnnotations": {
+      "isEditedByUser": true
+    },
+    "isRequired": false
+  },
+  {
+    "instance": {
+      "key": {
+        "publicId": "access_consent",
+        "versionId": "1"
+      },
+      "param": [
+        {
+          "key": "write",
+          "value": {
+            "type": "CONSTANT_STRING",
+            "string": "analytics_storage"
+          }
+        }
+      ]
+    },
+    "clientAnnotations": {
+      "isEditedByUser": true
+    },
+    "isRequired": false
+  },
+  {
+    "instance": {
+      "key": {
+        "publicId": "access_consent",
+        "versionId": "1"
+      },
+      "param": [
+        {
+          "key": "write",
+          "value": {
+            "type": "CONSTANT_STRING",
+            "string": "ad_user_data"
+          }
+        }
+      ]
+    },
+    "clientAnnotations": {
+      "isEditedByUser": true
+    },
+    "isRequired": false
+  },
+  {
+    "instance": {
+      "key": {
+        "publicId": "access_consent",
+        "versionId": "1"
+      },
+      "param": [
+        {
+          "key": "write",
+          "value": {
+            "type": "CONSTANT_STRING",
+            "string": "ad_personalization"
+          }
+        }
+      ]
+    },
+    "clientAnnotations": {
+      "isEditedByUser": true
+    },
+    "isRequired": false
+  },
   {
     "instance": {
       "key": {
@@ -138,15 +278,10 @@ ___WEB_PERMISSIONS___
       },
       "param": [
         {
-          "key": "urls",
+          "key": "url",
           "value": {
-            "type": 2,
-            "listItem": [
-              {
-                "type": 1,
-                "string": "https://fitconsent.com/api/banner*"
-              }
-            ]
+            "type": "TEMPLATE",
+            "string": "https://fitconsent.com/api/banner?websiteId={{websiteId}}"
           }
         }
       ]
@@ -154,17 +289,7 @@ ___WEB_PERMISSIONS___
     "clientAnnotations": {
       "isEditedByUser": true
     },
-    "isRequired": true
-  },
-  {
-    "instance": {
-      "key": {
-        "publicId": "access_consent",
-        "versionId": "1"
-      },
-      "param": []
-    },
-    "isRequired": true
+    "isRequired": false
   }
 ]
 

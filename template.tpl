@@ -106,6 +106,7 @@ if (tagType === 'CONSENT_DEFAULT') {
 }
 
 
+
 ___WEB_PERMISSIONS___
 
 [
@@ -129,62 +130,6 @@ ___WEB_PERMISSIONS___
       "isEditedByUser": true
     },
     "isRequired": true
-  },
-   {
-    "instance": {
-      "key": {
-        "publicId": "read_storage",
-        "versionId": "1"
-      },
-      "param": [
-        {
-          "key": "key",
-          "value": {
-            "type": "CONSTANT_STRING",
-            "string": "gtm.allowlist"
-          }
-        },
-        {
-          "key": "read",
-          "value": {
-            "type": "CONSTANT_STRING",
-            "string": "e"
-          }
-        }
-      ]
-    },
-    "clientAnnotations": {
-      "isEditedByUser": true
-    },
-    "isRequired": false
-  },
-  {
-    "instance": {
-      "key": {
-        "publicId": "write_storage",
-        "versionId": "1"
-      },
-      "param": [
-        {
-          "key": "key",
-          "value": {
-            "type": "CONSTANT_STRING",
-            "string": "gtm.allowlist"
-          }
-        },
-        {
-          "key": "write",
-          "value": {
-            "type": "CONSTANT_STRING",
-            "string": "e"
-          }
-        }
-      ]
-    },
-    "clientAnnotations": {
-      "isEditedByUser": true
-    },
-    "isRequired": false
   },
   {
     "instance": {
@@ -261,6 +206,34 @@ ___WEB_PERMISSIONS___
           "value": {
             "type": "CONSTANT_STRING",
             "string": "ad_personalization"
+          }
+        }
+      ]
+    },
+    "clientAnnotations": {
+      "isEditedByUser": true
+    },
+    "isRequired": false
+  },
+   {
+    "instance": {
+      "key": {
+        "publicId": "access_consent",
+        "versionId": "1"
+      },
+      "param": [
+        {
+          "key": "access",
+          "value": {
+            "type": "CONSTANT_STRING",
+            "string": "ms_consent"
+          }
+        },
+        {
+          "key": "write",
+          "value": {
+            "type": "CONSTANT_STRING",
+            "string": "granted"
           }
         }
       ]

@@ -16,7 +16,7 @@ This template simplifies the integration of the FitConsent banner and the manage
 3.  Create a "FitConsent Banner Loader" tag, add your **FitConsent Website ID** from your dashboard, and also set it to fire on the "Consent Initialization - All Pages" trigger.
 4.  Ensure your other tags (like Google Analytics) are configured to respect the consent state.
 
-For detailed, step-by-step instructions, please visit our official [Documentation Page](https://fitconsent.com/documentation).
+For detailed, step-by-step instructions, please visit our official [Documentation Page](https://fitconsent.com/index.php/documentation/).
 
 ## Parameters
 

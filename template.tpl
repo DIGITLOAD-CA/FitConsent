@@ -97,7 +97,7 @@ if (tagType === 'CONSENT_DEFAULT') {
     return;
   }
 
-  const scriptUrl = 'https://fitconsent.com/api/banner?websiteId=' + websiteId;
+  const scriptUrl = 'https://app.fitconsent.com/api/banner?websiteId=' + websiteId;
   injectScript(scriptUrl, data.gtmOnSuccess, data.gtmOnFailure, scriptUrl);
 
 } else {
@@ -254,7 +254,7 @@ ___WEB_PERMISSIONS___
           "key": "url",
           "value": {
             "type": "TEMPLATE",
-            "string": "https://fitconsent.com/api/banner?websiteId={{websiteId}}"
+            "string": "https://app.fitconsent.com/api/banner?websiteId={{websiteId}}"
           }
         }
       ]

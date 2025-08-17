@@ -2,7 +2,7 @@
 homepage: "https://fitconsent.com"
 documentation: "https://fitconsent.com/index.php/documentation/"
 versions:
-  - sha: 220ef5a9d70080bc82d88a0f6f09827c7a2b6bf2
+  - sha: b5ffbf0ef12c4640f4eda02b5056c5c031824240
     changeNotes: "Initial release of the FitConsent Tag."
 
 # Metadata for the Community Template Gallery

@@ -26,6 +26,7 @@ ___INFO___
 }
 
 
+
 ___TEMPLATE_PARAMETERS___
 
 [
@@ -107,179 +108,29 @@ if (tagType === 'CONSENT_DEFAULT') {
 
 
 
-[
-  {
-    "instance": {
-      "key": {
-        "publicId": "logging",
-        "versionId": "1"
-      },
-      "param": [
-        {
-          "key": "environments",
-          "value": {
-            "type": 1,
-            "string": "debug"
-          }
-        }
-      ]
-    },
-    "clientAnnotations": {
-      "isEditedByUser": true
-    },
-    "isRequired": true
-  },
-  {
-    "instance": {
-      "key": {
-        "publicId": "access_consent",
-        "versionId": "1"
-      },
-      "param": [
-        {
-          "key": "write",
-          "value": {
-            "type": "CONSTANT_STRING",
-            "string": "ad_storage"
-          }
-        }
-      ]
-    },
-    "clientAnnotations": {
-      "isEditedByUser": true
-    },
-    "isRequired": false
-  },
-  {
-    "instance": {
-      "key": {
-        "publicId": "access_consent",
-        "versionId": "1"
-      },
-      "param": [
-        {
-          "key": "write",
-          "value": {
-            "type": "CONSTANT_STRING",
-            "string": "analytics_storage"
-          }
-        }
-      ]
-    },
-    "clientAnnotations": {
-      "isEditedByUser": true
-    },
-    "isRequired": false
-  },
-  {
-    "instance": {
-      "key": {
-        "publicId": "access_consent",
-        "versionId": "1"
-      },
-      "param": [
-        {
-          "key": "write",
-          "value": {
-            "type": "CONSTANT_STRING",
-            "string": "ad_user_data"
-          }
-        }
-      ]
-    },
-    "clientAnnotations": {
-      "isEditedByUser": true
-    },
-    "isRequired": false
-  },
-  {
-    "instance": {
-      "key": {
-        "publicId": "access_consent",
-        "versionId": "1"
-      },
-      "param": [
-        {
-          "key": "write",
-          "value": {
-            "type": "CONSTANT_STRING",
-            "string": "ad_personalization"
-          }
-        }
-      ]
-    },
-    "clientAnnotations": {
-      "isEditedByUser": true
-    },
-    "isRequired": false
-  },
-   {
-    "instance": {
-      "key": {
-        "publicId": "access_consent",
-        "versionId": "1"
-      },
-      "param": [
-        {
-          "key": "access",
-          "value": {
-            "type": "CONSTANT_STRING",
-            "string": "ms_consent"
-          }
-        },
-        {
-          "key": "write",
-          "value": {
-            "type": "CONSTANT_STRING",
-            "string": "granted"
-          }
-        }
-      ]
-    },
-    "clientAnnotations": {
-      "isEditedByUser": true
-    },
-    "isRequired": false
-  },
-  {
-    "instance": {
-      "key": {
-        "publicId": "inject_script",
-        "versionId": "1"
-      },
-      "param": [
-        {
-          "key": "url",
-          "value": {
-            "type": "TEMPLATE",
-            "string": "https://app.fitconsent.com/api/banner?websiteId={{websiteId}}"
-          }
-        }
-      ]
-    },
-    "clientAnnotations": {
-      "isEditedByUser": true
-    },
-    "isRequired": false
-  }
-];
-
-
 ___WEB_PERMISSIONS___
 
 [
   {
     "instance": {
       "key": {
-        "publicId": "logging",
+        "publicId": "access_consent",
         "versionId": "1"
       },
       "param": [
         {
-          "key": "environments",
+          "key": "write",
           "value": {
-            "type": 1,
-            "string": "debug"
+            "type": 2,
+            "listItem": [
+              { "type": 1, "string": "ad_storage" },
+              { "type": 1, "string": "ad_user_data" },
+              { "type": 1, "string": "ad_personalization" },
+              { "type": 1, "string": "analytics_storage" },
+              { "type": 1, "string": "functionality_storage" },
+              { "type": 1, "string": "personalization_storage" },
+              { "type": 1, "string": "security_storage" }
+            ]
           }
         }
       ]
@@ -303,7 +154,7 @@ ___WEB_PERMISSIONS___
             "listItem": [
               {
                 "type": 1,
-                "string": "https://fitconsent.com/api/banner*"
+                "string": "https://app.fitconsent.com/api/banner*"
               }
             ]
           }
@@ -318,15 +169,25 @@ ___WEB_PERMISSIONS___
   {
     "instance": {
       "key": {
-        "publicId": "access_consent",
+        "publicId": "logging",
         "versionId": "1"
       },
-      "param": []
+      "param": [
+        {
+          "key": "environments",
+          "value": {
+            "type": 1,
+            "string": "debug"
+          }
+        }
+      ]
+    },
+    "clientAnnotations": {
+      "isEditedByUser": true
     },
     "isRequired": true
   }
 ]
-
 
 ___TESTS___
 
@@ -335,6 +196,6 @@ scenarios: []
 
 ___NOTES___
 
-Created on 8/17/2025, 11:13:16 PM
+Created on 8/18/2025, 01:51:16 PM
 
 

@@ -114,23 +114,15 @@ ___WEB_PERMISSIONS___
   {
     "instance": {
       "key": {
-        "publicId": "access_consent",
+        "publicId": "logging",
         "versionId": "1"
       },
       "param": [
         {
-          "key": "write",
+          "key": "environments",
           "value": {
-            "type": 2,
-            "listItem": [
-              { "type": 1, "string": "ad_storage" },
-              { "type": 1, "string": "ad_user_data" },
-              { "type": 1, "string": "ad_personalization" },
-              { "type": 1, "string": "analytics_storage" },
-              { "type": 1, "string": "functionality_storage" },
-              { "type": 1, "string": "personalization_storage" },
-              { "type": 1, "string": "security_storage" }
-            ]
+            "type": 1,
+            "string": "debug"
           }
         }
       ]
@@ -169,22 +161,49 @@ ___WEB_PERMISSIONS___
   {
     "instance": {
       "key": {
-        "publicId": "logging",
+        "publicId": "access_consent",
         "versionId": "1"
       },
       "param": [
         {
-          "key": "environments",
+          "key": "write",
           "value": {
-            "type": 1,
-            "string": "debug"
+            "type": 2,
+            "listItem": [
+              {
+                "type": 1,
+                "string": "ad_storage"
+              },
+              {
+                "type": 1,
+                "string": "ad_user_data"
+              },
+              {
+                "type": 1,
+                "string": "ad_personalization"
+              },
+              {
+                "type": 1,
+                "string": "analytics_storage"
+              },
+              {
+                "type": 1,
+                "string": "functionality_storage"
+              },
+              {
+                "type": 1,
+                "string": "personalization_storage"
+              },
+              {
+                "type": 1,
+                "string": "security_storage"
+              }
+            ]
           }
         }
       ]
     },
-    "clientAnnotations": {
-      "isEditedByUser": true
-    },
+  
     "isRequired": true
   }
 ]

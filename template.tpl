@@ -203,7 +203,9 @@ ___WEB_PERMISSIONS___
         }
       ]
     },
-  
+  "clientAnnotations": {
+    "isEditedByUser": false
+  },
     "isRequired": true
   }
 ]

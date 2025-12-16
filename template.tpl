@@ -83,7 +83,8 @@ if (tagType === 'CONSENT_DEFAULT') {
     'analytics_storage': 'denied',
     'functionality_storage': 'denied',
     'personalization_storage': 'denied',
-    'security_storage': 'granted'
+    'security_storage': 'granted',
+    'developer_id.dYTJjND': true 
   });
 
   data.gtmOnSuccess();

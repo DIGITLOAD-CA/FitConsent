@@ -35,81 +35,415 @@ ___TEMPLATE_PARAMETERS___
     "name": "websiteId",
     "displayName": "FitConsent Website ID",
     "simpleValueType": true,
-    "help": "Enter the Website ID from your FitConsent dashboard.",
+    "help": "Enter the Website ID from your FitConsent dashboard (Configuration page).",
+    "alwaysInSummary": true,
     "valueValidators": [
       {
         "type": "NON_EMPTY"
       }
+    ],
+    "enablingConditions": [
+      {
+        "paramName": "tagType",
+        "paramValue": "CONSENT_DEFAULT",
+        "type": "NOT_EQUALS"
+      }
     ]
   },
   {
-    "type": "SELECT",
-    "name": "tagType",
-    "displayName": "Tag Type",
-    "macrosInSelect": true,
-    "selectItems": [
+    "type": "GROUP",
+    "name": "consentDefaultsGroup",
+    "displayName": "Google Consent Mode",
+    "groupStyle": "NO_ZIPPY",
+    "subParams": [
       {
-        "value": "BANNER_LOADER",
-        "displayValue": "FitConsent Banner Loader"
+        "type": "CHECKBOX",
+        "name": "consentModeEnabled",
+        "checkboxText": "Enable Google Consent Mode (advanced mode)",
+        "simpleValueType": true,
+        "defaultValue": true,
+        "alwaysInSummary": true,
+        "help": "When enabled, this tag sets the Google Consent Mode defaults below and sends consent updates to Google tags as soon as the visitor makes a choice. Disable it only if you use Consent Mode basic mode (tags are blocked until consent) and set the same option in your FitConsent dashboard."
       },
       {
-        "value": "CONSENT_DEFAULT",
-        "displayValue": "Google Consent Default"
+        "type": "GROUP",
+        "name": "consentModeSettings",
+        "displayName": "Consent Mode settings",
+        "groupStyle": "NO_ZIPPY",
+        "subParams": [
+          {
+            "type": "PARAM_TABLE",
+            "name": "regionSettings",
+            "displayName": "Default consent state by region",
+            "help": "Each row sets the default consent state for the listed regions until the visitor makes a choice. Region: comma-separated ISO 3166-1 alpha-2 country codes (e.g. 'FR, DE, IT') or ISO 3166-2 subdivision codes (e.g. 'US-CA'). Leave the region blank for the global default that applies everywhere else. A more specific region overrides a broader one (US-CA overrides US). Example: one row with a blank region and every type 'Denied', plus a row for 'US' with types 'Granted' only if no consent banner is required there. If no global row is defined, every type defaults to 'Denied'. security_storage is always 'Granted'.",
+            "newRowButtonText": "Add region",
+            "newRowTitle": "Add region",
+            "editRowTitle": "Edit region",
+            "paramTableColumns": [
+              {
+                "param": {
+                  "type": "TEXT",
+                  "name": "region",
+                  "displayName": "Region (leave blank to apply globally)",
+                  "simpleValueType": true,
+                  "valueValidators": [
+                    {
+                      "type": "REGEX",
+                      "args": [
+                        "^(\\s*[A-Za-z]{2}(-[A-Za-z0-9]{1,3})?\\s*(,\\s*[A-Za-z]{2}(-[A-Za-z0-9]{1,3})?\\s*)*)?$"
+                      ],
+                      "errorMessage": "Use comma-separated ISO 3166 codes, e.g. 'FR, DE' or 'US-CA'."
+                    }
+                  ]
+                },
+                "isUnique": true
+              },
+              {
+                "param": {
+                  "type": "SELECT",
+                  "name": "ad_storage",
+                  "displayName": "ad_storage",
+                  "macrosInSelect": false,
+                  "selectItems": [
+                    { "value": "denied", "displayValue": "Denied" },
+                    { "value": "granted", "displayValue": "Granted" }
+                  ],
+                  "simpleValueType": true,
+                  "defaultValue": "denied"
+                },
+                "isUnique": false
+              },
+              {
+                "param": {
+                  "type": "SELECT",
+                  "name": "analytics_storage",
+                  "displayName": "analytics_storage",
+                  "macrosInSelect": false,
+                  "selectItems": [
+                    { "value": "denied", "displayValue": "Denied" },
+                    { "value": "granted", "displayValue": "Granted" }
+                  ],
+                  "simpleValueType": true,
+                  "defaultValue": "denied"
+                },
+                "isUnique": false
+              },
+              {
+                "param": {
+                  "type": "SELECT",
+                  "name": "ad_user_data",
+                  "displayName": "ad_user_data",
+                  "macrosInSelect": false,
+                  "selectItems": [
+                    { "value": "denied", "displayValue": "Denied" },
+                    { "value": "granted", "displayValue": "Granted" }
+                  ],
+                  "simpleValueType": true,
+                  "defaultValue": "denied"
+                },
+                "isUnique": false
+              },
+              {
+                "param": {
+                  "type": "SELECT",
+                  "name": "ad_personalization",
+                  "displayName": "ad_personalization",
+                  "macrosInSelect": false,
+                  "selectItems": [
+                    { "value": "denied", "displayValue": "Denied" },
+                    { "value": "granted", "displayValue": "Granted" }
+                  ],
+                  "simpleValueType": true,
+                  "defaultValue": "denied"
+                },
+                "isUnique": false
+              },
+              {
+                "param": {
+                  "type": "SELECT",
+                  "name": "functionality_storage",
+                  "displayName": "functionality_storage",
+                  "macrosInSelect": false,
+                  "selectItems": [
+                    { "value": "denied", "displayValue": "Denied" },
+                    { "value": "granted", "displayValue": "Granted" }
+                  ],
+                  "simpleValueType": true,
+                  "defaultValue": "denied"
+                },
+                "isUnique": false
+              },
+              {
+                "param": {
+                  "type": "SELECT",
+                  "name": "personalization_storage",
+                  "displayName": "personalization_storage",
+                  "macrosInSelect": false,
+                  "selectItems": [
+                    { "value": "denied", "displayValue": "Denied" },
+                    { "value": "granted", "displayValue": "Granted" }
+                  ],
+                  "simpleValueType": true,
+                  "defaultValue": "denied"
+                },
+                "isUnique": false
+              }
+            ]
+          },
+          {
+            "type": "TEXT",
+            "name": "waitForUpdate",
+            "displayName": "Wait for update",
+            "simpleValueType": true,
+            "valueUnit": "milliseconds",
+            "defaultValue": 500,
+            "help": "How long Google tags wait for the visitor's consent update before sending data with the default state (wait_for_update). Google recommends at least 500 ms for CMPs that load asynchronously. Set 0 to disable.",
+            "valueValidators": [
+              {
+                "type": "NON_NEGATIVE_NUMBER"
+              }
+            ]
+          },
+          {
+            "type": "CHECKBOX",
+            "name": "adsDataRedaction",
+            "checkboxText": "Redact ads data when ad_storage is denied (ads_data_redaction)",
+            "simpleValueType": true,
+            "defaultValue": false,
+            "help": "When ad_storage is denied, Google Ads and Floodlight tags redact ad click identifiers in network requests and send requests through a cookieless domain."
+          },
+          {
+            "type": "CHECKBOX",
+            "name": "urlPassthrough",
+            "checkboxText": "Pass ad click information through URLs (url_passthrough)",
+            "simpleValueType": true,
+            "defaultValue": false,
+            "help": "When ad_storage or analytics_storage is denied, ad click, client ID and session ID information is passed in URL parameters across pages of your site. Requires a Conversion Linker tag."
+          }
+        ],
+        "enablingConditions": [
+          {
+            "paramName": "consentModeEnabled",
+            "paramValue": true,
+            "type": "EQUALS"
+          }
+        ]
       }
     ],
-    "simpleValueType": true,
-    "help": "Select \u0027Google Consent Default\u0027 to set the default denied state, or \u0027Banner Loader\u0027 to load the consent banner.",
-    "defaultValue": "BANNER_LOADER"
+    "enablingConditions": [
+      {
+        "paramName": "tagType",
+        "paramValue": "BANNER_LOADER",
+        "type": "NOT_EQUALS"
+      }
+    ]
+  },
+  {
+    "type": "GROUP",
+    "name": "advancedGroup",
+    "displayName": "Advanced: tag mode",
+    "groupStyle": "ZIPPY_CLOSED",
+    "subParams": [
+      {
+        "type": "SELECT",
+        "name": "tagType",
+        "displayName": "Tag mode",
+        "macrosInSelect": false,
+        "selectItems": [
+          {
+            "value": "ALL_IN_ONE",
+            "displayValue": "All-in-one: consent defaults + banner (recommended)"
+          },
+          {
+            "value": "CONSENT_DEFAULT",
+            "displayValue": "Legacy: consent defaults only"
+          },
+          {
+            "value": "BANNER_LOADER",
+            "displayValue": "Legacy: banner loader only"
+          }
+        ],
+        "simpleValueType": true,
+        "defaultValue": "ALL_IN_ONE",
+        "help": "Keep 'All-in-one' for new installs: a single tag on the Consent Initialization - All Pages trigger. The legacy modes exist only so containers built with the two-tag setup of version 1 keep working."
+      }
+    ]
   }
 ]
 
 
 ___SANDBOXED_JS_FOR_WEB_TEMPLATE___
 
-const setDefaultConsentState = require('setDefaultConsentState');
+const callInWindow = require('callInWindow');
+const createQueue = require('createQueue');
+const encodeUriComponent = require('encodeUriComponent');
+const getCookieValues = require('getCookieValues');
+const gtagSet = require('gtagSet');
 const injectScript = require('injectScript');
-const createQueue = require('createQueue');  
+const JSON = require('JSON');
 const log = require('logToConsole');
+const makeNumber = require('makeNumber');
+const setDefaultConsentState = require('setDefaultConsentState');
+const setInWindow = require('setInWindow');
+const updateConsentState = require('updateConsentState');
 
+// FitConsent's Google-issued CMP developer ID. Hard-coded on purpose: Google requires the ID
+// to be set by the CMP and not editable by template users.
+const DEVELOPER_ID = 'developer_id.dYTJjND';
+const BANNER_URL = 'https://fitconsent.com/api/banner?websiteId=';
+const COOKIE_NAME = 'fitconsent_given';
+const CONSENT_TYPES = [
+  'ad_storage',
+  'analytics_storage',
+  'ad_user_data',
+  'ad_personalization',
+  'functionality_storage',
+  'personalization_storage'
+];
+// Must stay in sync with CATEGORY_GCM_MAP in src/app/api/banner/route.ts.
+const CATEGORY_GCM_MAP = {
+  analytics: ['analytics_storage'],
+  marketing: ['ad_storage', 'ad_user_data', 'ad_personalization'],
+  preferences: ['functionality_storage', 'personalization_storage']
+};
 
-const tagType = data.tagType;
+// 1. Developer ID: first statement, unconditional.
+gtagSet(DEVELOPER_ID, true);
 
-if (tagType === 'CONSENT_DEFAULT') {
-  log('FitConsent GTM: Setting default consent state.');
+// Tags saved with version 1 carry tagType CONSENT_DEFAULT or BANNER_LOADER and none of the
+// newer fields; missing fields fall back to the version 1 behavior.
+const tagType = data.tagType || 'ALL_IN_ONE';
+const setsDefaults = tagType !== 'BANNER_LOADER';
+const loadsBanner = tagType !== 'CONSENT_DEFAULT';
+const consentModeEnabled = data.consentModeEnabled !== false;
 
-  setDefaultConsentState({
-    'ad_storage': 'denied',
-    'ad_user_data': 'denied',
-    'ad_personalization': 'denied',
-    'analytics_storage': 'denied',
-    'functionality_storage': 'denied',
-    'personalization_storage': 'denied',
-    'security_storage': 'granted',
-    'developer_id.dYTJjND': true 
+const toState = (value) => value === 'granted' ? 'granted' : 'denied';
+
+// "fr, DE ,us-ca" -> ["FR", "DE", "US-CA"]
+const splitRegions = (input) => {
+  if (!input) return [];
+  return input.split(',')
+    .map(entry => entry.trim().toUpperCase())
+    .filter(entry => entry.length !== 0);
+};
+
+const allDenied = () => {
+  const state = { security_storage: 'granted' };
+  CONSENT_TYPES.forEach(type => { state[type] = 'denied'; });
+  return state;
+};
+
+// Maps the banner's category choices ({analytics: true, marketing: false, ...}) to
+// Google consent types. Categories without a Google mapping are ignored.
+const consentFromChoices = (choices) => {
+  const state = {};
+  CONSENT_TYPES.forEach(type => { state[type] = 'denied'; });
+  ['analytics', 'marketing', 'preferences'].forEach(category => {
+    if (choices[category] === true) {
+      CATEGORY_GCM_MAP[category].forEach(type => { state[type] = 'granted'; });
+    }
+  });
+  return state;
+};
+
+const readStoredChoices = () => {
+  const values = getCookieValues(COOKIE_NAME);
+  if (!values || values.length === 0) return undefined;
+  let parsed;
+  try {
+    parsed = JSON.parse(values[0]);
+  } catch (e) {
+    return undefined;
+  }
+  if (!parsed || typeof parsed.choices !== 'object' || !parsed.choices) return undefined;
+  return parsed.choices;
+};
+
+// Receives Google consent states from the banner (window.fitconsent.onConsentChange) and
+// applies them through the template API, as Google requires for consent mode templates.
+const onConsentChange = (consent) => {
+  if (!consent) return;
+  const state = {};
+  let count = 0;
+  CONSENT_TYPES.forEach(type => {
+    if (consent[type] === 'granted' || consent[type] === 'denied') {
+      state[type] = consent[type];
+      count++;
+    }
+  });
+  if (count > 0) updateConsentState(state);
+};
+
+const applyDefaults = () => {
+  const waitForUpdate = makeNumber(data.waitForUpdate);
+  const rows = data.regionSettings || [];
+  let hasGlobalDefault = false;
+  let globalAdStorage = 'denied';
+  let globalAnalyticsStorage = 'denied';
+
+  // 2. One default command per region row.
+  rows.forEach(row => {
+    const state = { security_storage: 'granted' };
+    CONSENT_TYPES.forEach(type => { state[type] = toState(row[type]); });
+    const regions = splitRegions(row.region);
+    if (regions.length > 0) {
+      state.region = regions;
+    } else {
+      hasGlobalDefault = true;
+      globalAdStorage = state.ad_storage;
+      globalAnalyticsStorage = state.analytics_storage;
+    }
+    if (waitForUpdate > 0) state.wait_for_update = waitForUpdate;
+    setDefaultConsentState(state);
   });
 
-  var uetq = createQueue('uetq');
-  uetq('consent', 'default', { 'ad_storage': 'denied' });
+  // Fallback: deny everything outside the listed regions.
+  if (!hasGlobalDefault) {
+    const fallback = allDenied();
+    if (waitForUpdate > 0) fallback.wait_for_update = waitForUpdate;
+    setDefaultConsentState(fallback);
+  }
+
+  // 3. Optional gtag settings.
+  gtagSet('ads_data_redaction', data.adsDataRedaction === true);
+  gtagSet('url_passthrough', data.urlPassthrough === true);
+
+  // Microsoft UET default: same shape as Microsoft consent mode (ad_storage + analytics_storage).
+  const uetq = createQueue('uetq');
+  uetq('consent', 'default', { 'ad_storage': globalAdStorage, 'analytics_storage': globalAnalyticsStorage });
+
+  // 4. Returning visitors: apply the stored choice before any other tag fires.
+  const choices = readStoredChoices();
+  if (choices) updateConsentState(consentFromChoices(choices));
+
+  // 6. Tell the banner the defaults and the returning-visitor update came from GTM.
+  setInWindow('fitconsentGtmManaged', true, true);
+};
+
+if (setsDefaults && consentModeEnabled) {
+  applyDefaults();
+}
+
+if (!loadsBanner) {
   data.gtmOnSuccess();
-
-} else if (tagType === 'BANNER_LOADER') {
-  log('FitConsent GTM: Loading banner script.');
-
+} else {
   const websiteId = data.websiteId;
   if (!websiteId) {
     log('FitConsent GTM Error: Website ID is not set. Banner will not load.');
     data.gtmOnFailure();
-    return;
+  } else {
+    const scriptUrl = BANNER_URL + encodeUriComponent(websiteId);
+    // 5. Once the banner is loaded, route its later consent changes through updateConsentState.
+    const onBannerLoaded = () => {
+      if (consentModeEnabled) {
+        callInWindow('fitconsent.onConsentChange', onConsentChange, { source: 'gtm-template' });
+      }
+      data.gtmOnSuccess();
+    };
+    // 7. Load the banner.
+    injectScript(scriptUrl, onBannerLoaded, data.gtmOnFailure, scriptUrl);
   }
-
-  const scriptUrl = 'https://fitconsent.com/api/banner?websiteId=' + websiteId;
-  injectScript(scriptUrl, data.gtmOnSuccess, data.gtmOnFailure, scriptUrl);
-
-} else {
-  log('FitConsent GTM Error: Unknown tag type selected.');
-  data.gtmOnFailure();
 }
-
 
 
 ___WEB_PERMISSIONS___
@@ -195,6 +529,19 @@ ___WEB_PERMISSIONS___
                   { "type": 1, "string": "write" }
                 ],
                 "mapValue": [
+                  { "type": 1, "string": "analytics_storage" },
+                  { "type": 8, "boolean": true },
+                  { "type": 8, "boolean": true }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  { "type": 1, "string": "consentType" },
+                  { "type": 1, "string": "read" },
+                  { "type": 1, "string": "write" }
+                ],
+                "mapValue": [
                   { "type": 1, "string": "ad_user_data" },
                   { "type": 8, "boolean": true },
                   { "type": 8, "boolean": true }
@@ -209,19 +556,6 @@ ___WEB_PERMISSIONS___
                 ],
                 "mapValue": [
                   { "type": 1, "string": "ad_personalization" },
-                  { "type": 8, "boolean": true },
-                  { "type": 8, "boolean": true }
-                ]
-              },
-              {
-                "type": 3,
-                "mapKey": [
-                  { "type": 1, "string": "consentType" },
-                  { "type": 1, "string": "read" },
-                  { "type": 1, "string": "write" }
-                ],
-                "mapValue": [
-                  { "type": 1, "string": "analytics_storage" },
                   { "type": 8, "boolean": true },
                   { "type": 8, "boolean": true }
                 ]
@@ -264,19 +598,6 @@ ___WEB_PERMISSIONS___
                   { "type": 8, "boolean": true },
                   { "type": 8, "boolean": true }
                 ]
-              },
-              {
-                "type": 3,
-                "mapKey": [
-                  { "type": 1, "string": "consentType" },
-                  { "type": 1, "string": "read" },
-                  { "type": 1, "string": "write" }
-                ],
-                "mapValue": [
-                  { "type": 1, "string": "developer_id.dYTJjND" },
-                  { "type": 8, "boolean": true },
-                  { "type": 8, "boolean": true }
-                ]
               }
             ]
           }
@@ -284,7 +605,74 @@ ___WEB_PERMISSIONS___
       ]
     },
     "clientAnnotations": {
-      "isEditedByUser": false
+      "isEditedByUser": true
+    },
+    "isRequired": true
+  },
+  {
+    "instance": {
+      "key": {
+        "publicId": "write_data_layer",
+        "versionId": "1"
+      },
+      "param": [
+        {
+          "key": "keyPatterns",
+          "value": {
+            "type": 2,
+            "listItem": [
+              {
+                "type": 1,
+                "string": "developer_id.dYTJjND"
+              },
+              {
+                "type": 1,
+                "string": "ads_data_redaction"
+              },
+              {
+                "type": 1,
+                "string": "url_passthrough"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "clientAnnotations": {
+      "isEditedByUser": true
+    },
+    "isRequired": true
+  },
+  {
+    "instance": {
+      "key": {
+        "publicId": "get_cookies",
+        "versionId": "1"
+      },
+      "param": [
+        {
+          "key": "cookieAccess",
+          "value": {
+            "type": 1,
+            "string": "specific"
+          }
+        },
+        {
+          "key": "cookieNames",
+          "value": {
+            "type": 2,
+            "listItem": [
+              {
+                "type": 1,
+                "string": "fitconsent_given"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "clientAnnotations": {
+      "isEditedByUser": true
     },
     "isRequired": true
   },
@@ -305,11 +693,43 @@ ___WEB_PERMISSIONS___
                 "mapKey": [
                   { "type": 1, "string": "key" },
                   { "type": 1, "string": "read" },
-                  { "type": 1, "string": "write" }
+                  { "type": 1, "string": "write" },
+                  { "type": 1, "string": "execute" }
                 ],
                 "mapValue": [
                   { "type": 1, "string": "uetq" },
                   { "type": 8, "boolean": true },
+                  { "type": 8, "boolean": true },
+                  { "type": 8, "boolean": false }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  { "type": 1, "string": "key" },
+                  { "type": 1, "string": "read" },
+                  { "type": 1, "string": "write" },
+                  { "type": 1, "string": "execute" }
+                ],
+                "mapValue": [
+                  { "type": 1, "string": "fitconsentGtmManaged" },
+                  { "type": 8, "boolean": true },
+                  { "type": 8, "boolean": true },
+                  { "type": 8, "boolean": false }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  { "type": 1, "string": "key" },
+                  { "type": 1, "string": "read" },
+                  { "type": 1, "string": "write" },
+                  { "type": 1, "string": "execute" }
+                ],
+                "mapValue": [
+                  { "type": 1, "string": "fitconsent.onConsentChange" },
+                  { "type": 8, "boolean": false },
+                  { "type": 8, "boolean": false },
                   { "type": 8, "boolean": true }
                 ]
               }
@@ -325,13 +745,194 @@ ___WEB_PERMISSIONS___
   }
 ]
 
+
 ___TESTS___
 
-scenarios: []
+scenarios:
+- name: Sets the developer ID with gtagSet before any consent command
+  code: |-
+    const calls = [];
+    mock('gtagSet', function(key, value) { calls.push('set:' + key); });
+    mock('setDefaultConsentState', function(state) { calls.push('default'); });
+    mock('injectScript', function(url, onSuccess) { onSuccess(); });
+
+    runCode(baseData);
+
+    assertThat(calls[0]).isEqualTo('set:developer_id.dYTJjND');
+    assertApi('gtagSet').wasCalledWith('developer_id.dYTJjND', true);
+    assertApi('gtmOnSuccess').wasCalled();
+- name: Sets the developer ID even when Consent Mode is disabled
+  code: |-
+    mock('injectScript', function(url, onSuccess) { onSuccess(); });
+
+    runCode({ websiteId: 'site123', tagType: 'ALL_IN_ONE', consentModeEnabled: false });
+
+    assertApi('gtagSet').wasCalledWith('developer_id.dYTJjND', true);
+    assertApi('setDefaultConsentState').wasNotCalled();
+    assertApi('injectScript').wasCalled();
+- name: Each region row produces one default command
+  code: |-
+    const defaults = [];
+    mock('setDefaultConsentState', function(state) { defaults.push(state); });
+    mock('injectScript', function(url, onSuccess) { onSuccess(); });
+
+    runCode(baseData);
+
+    assertThat(defaults.length).isEqualTo(2);
+    assertThat(defaults[0]).isEqualTo({
+      security_storage: 'granted',
+      ad_storage: 'denied',
+      analytics_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      functionality_storage: 'denied',
+      personalization_storage: 'denied',
+      wait_for_update: 500
+    });
+    assertThat(defaults[1]).isEqualTo({
+      security_storage: 'granted',
+      ad_storage: 'granted',
+      analytics_storage: 'granted',
+      ad_user_data: 'granted',
+      ad_personalization: 'granted',
+      functionality_storage: 'granted',
+      personalization_storage: 'granted',
+      region: ['US', 'CA-ON'],
+      wait_for_update: 500
+    });
+- name: Falls back to all denied when no global row is defined
+  code: |-
+    const defaults = [];
+    mock('setDefaultConsentState', function(state) { defaults.push(state); });
+    mock('injectScript', function(url, onSuccess) { onSuccess(); });
+
+    runCode({
+      websiteId: 'site123',
+      tagType: 'ALL_IN_ONE',
+      consentModeEnabled: true,
+      waitForUpdate: '0',
+      regionSettings: [{ region: 'US', ad_storage: 'granted', analytics_storage: 'granted', ad_user_data: 'granted', ad_personalization: 'granted', functionality_storage: 'granted', personalization_storage: 'granted' }]
+    });
+
+    assertThat(defaults.length).isEqualTo(2);
+    assertThat(defaults[0].region).isEqualTo(['US']);
+    assertThat(defaults[1]).isEqualTo({
+      security_storage: 'granted',
+      ad_storage: 'denied',
+      analytics_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      functionality_storage: 'denied',
+      personalization_storage: 'denied'
+    });
+- name: Sets ads_data_redaction and url_passthrough
+  code: |-
+    mock('injectScript', function(url, onSuccess) { onSuccess(); });
+
+    runCode(baseData);
+
+    assertApi('gtagSet').wasCalledWith('ads_data_redaction', true);
+    assertApi('gtagSet').wasCalledWith('url_passthrough', false);
+- name: Returning visitor consent is restored from the cookie
+  code: |-
+    const updates = [];
+    mock('getCookieValues', function(name) {
+      return name === 'fitconsent_given' ? ['{"choices":{"necessary":true,"analytics":true,"marketing":false,"preferences":true},"geo":{"country":"France","region":"IDF"}}'] : [];
+    });
+    mock('updateConsentState', function(state) { updates.push(state); });
+    mock('injectScript', function(url, onSuccess) { onSuccess(); });
+
+    runCode(baseData);
+
+    assertThat(updates.length).isEqualTo(1);
+    assertThat(updates[0]).isEqualTo({
+      ad_storage: 'denied',
+      analytics_storage: 'granted',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      functionality_storage: 'granted',
+      personalization_storage: 'granted'
+    });
+- name: Invalid cookie is ignored
+  code: |-
+    mock('getCookieValues', ['not json']);
+    mock('injectScript', function(url, onSuccess) { onSuccess(); });
+
+    runCode(baseData);
+
+    assertApi('updateConsentState').wasNotCalled();
+    assertApi('gtmOnSuccess').wasCalled();
+- name: Loads the banner and registers the consent listener
+  code: |-
+    let injectedUrl;
+    let registered;
+    mock('injectScript', function(url, onSuccess) { injectedUrl = url; onSuccess(); });
+    mock('callInWindow', function(path, cb, options) { registered = { path: path, options: options, cb: cb }; });
+    const updates = [];
+    mock('updateConsentState', function(state) { updates.push(state); });
+
+    runCode(baseData);
+
+    assertThat(injectedUrl).isEqualTo('https://fitconsent.com/api/banner?websiteId=site123');
+    assertThat(registered.path).isEqualTo('fitconsent.onConsentChange');
+    assertThat(registered.options).isEqualTo({ source: 'gtm-template' });
+    registered.cb({ ad_storage: 'granted', analytics_storage: 'denied', bogus: 'granted' });
+    assertThat(updates[updates.length - 1]).isEqualTo({ ad_storage: 'granted', analytics_storage: 'denied' });
+    assertApi('setInWindow').wasCalledWith('fitconsentGtmManaged', true, true);
+- name: Fails when the website ID is missing
+  code: |-
+    runCode({ tagType: 'ALL_IN_ONE', consentModeEnabled: true });
+
+    assertApi('injectScript').wasNotCalled();
+    assertApi('gtmOnFailure').wasCalled();
+- name: Legacy consent default tag sets defaults without loading the banner
+  code: |-
+    runCode({ tagType: 'CONSENT_DEFAULT', websiteId: 'site123' });
+
+    assertApi('gtagSet').wasCalledWith('developer_id.dYTJjND', true);
+    assertApi('setDefaultConsentState').wasCalled();
+    assertApi('injectScript').wasNotCalled();
+    assertApi('gtmOnSuccess').wasCalled();
+- name: Legacy banner loader tag loads the banner without setting defaults
+  code: |-
+    mock('injectScript', function(url, onSuccess) { onSuccess(); });
+
+    runCode({ tagType: 'BANNER_LOADER', websiteId: 'site123' });
+
+    assertApi('gtagSet').wasCalledWith('developer_id.dYTJjND', true);
+    assertApi('setDefaultConsentState').wasNotCalled();
+    assertApi('setInWindow').wasNotCalled();
+    assertApi('injectScript').wasCalled();
+    assertApi('gtmOnSuccess').wasCalled();
+- name: Microsoft UET default covers ad_storage and analytics_storage
+  code: |-
+    const uetCalls = [];
+    mock('createQueue', function(name) {
+      return function(a, b, c) { uetCalls.push({ name: name, cmd: a, kind: b, state: c }); };
+    });
+    mock('injectScript', function(url, onSuccess) { onSuccess(); });
+
+    runCode(baseData);
+
+    assertThat(uetCalls.length).isEqualTo(1);
+    assertThat(uetCalls[0]).isEqualTo({ name: 'uetq', cmd: 'consent', kind: 'default', state: { ad_storage: 'denied', analytics_storage: 'denied' } });
+setup: |-
+  const baseData = {
+    websiteId: 'site123',
+    tagType: 'ALL_IN_ONE',
+    consentModeEnabled: true,
+    waitForUpdate: '500',
+    adsDataRedaction: true,
+    urlPassthrough: false,
+    regionSettings: [
+      { region: '', ad_storage: 'denied', analytics_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', functionality_storage: 'denied', personalization_storage: 'denied' },
+      { region: 'us, CA-ON', ad_storage: 'granted', analytics_storage: 'granted', ad_user_data: 'granted', ad_personalization: 'granted', functionality_storage: 'granted', personalization_storage: 'granted' }
+    ]
+  };
 
 
 ___NOTES___
 
 Created on 8/18/2025, 01:51:16 PM
-
-
+Version 2 (2026-10): region-specific defaults, developer ID via gtagSet, wait_for_update,
+ads_data_redaction, url_passthrough, consent restore for returning visitors, single all-in-one tag.

@@ -3,6 +3,8 @@ homepage: "https://fitconsent.com"
 documentation: "https://fitconsent.com/en/documentation/"
 versions:
   # Latest version
+  - sha: 74a80f83eaf275cab4d154371faaf787a40574e4
+    changeNotes: "Fix import error: remove try/catch, which sandboxed JavaScript does not support"
   - sha: 77c9090b94d112ff30e2936ba14332cf996dabec
     changeNotes: "Region-specific defaults, developer ID via gtagSet, wait_for_update, ads_data_redaction, url_passthrough, consent update for returning visitors, UET analytics_storage default"
   # Older versions

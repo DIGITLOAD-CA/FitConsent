@@ -349,12 +349,8 @@ const consentFromChoices = (choices) => {
 const readStoredChoices = () => {
   const values = getCookieValues(COOKIE_NAME);
   if (!values || values.length === 0) return undefined;
-  let parsed;
-  try {
-    parsed = JSON.parse(values[0]);
-  } catch (e) {
-    return undefined;
-  }
+  // Sandboxed JS has no try/catch; GTM's JSON.parse returns undefined on invalid input.
+  const parsed = JSON.parse(values[0]);
   if (!parsed || typeof parsed.choices !== 'object' || !parsed.choices) return undefined;
   return parsed.choices;
 };

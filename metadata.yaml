@@ -3,6 +3,8 @@ homepage: "https://fitconsent.com"
 documentation: "https://fitconsent.com/en/documentation/"
 versions:
   # Latest version
+  - sha: 6957667e953d9169893890a72245223c9c277283
+    changeNotes: "Global Privacy Control in the US states that require it, restore the banner's stored Google state for custom categories, optional TikTok hold and Amazon Consent Signal"
   - sha: 74a80f83eaf275cab4d154371faaf787a40574e4
     changeNotes: "Fix import error: remove try/catch, which sandboxed JavaScript does not support"
   - sha: 77c9090b94d112ff30e2936ba14332cf996dabec

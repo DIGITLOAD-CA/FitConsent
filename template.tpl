@@ -240,6 +240,37 @@ ___TEMPLATE_PARAMETERS___
   },
   {
     "type": "GROUP",
+    "name": "platformConnectorsGroup",
+    "displayName": "Other platforms",
+    "groupStyle": "ZIPPY_CLOSED",
+    "subParams": [
+      {
+        "type": "CHECKBOX",
+        "name": "tiktokConnector",
+        "checkboxText": "Hold TikTok Pixel events until the visitor chooses",
+        "simpleValueType": true,
+        "defaultValue": false,
+        "help": "Queues ttq.holdConsent() before any tag fires, and grants or revokes it for returning visitors from the Marketing choice. Also turn on the TikTok connector in the FitConsent dashboard, so the banner grants or revokes after a new choice."
+      },
+      {
+        "type": "CHECKBOX",
+        "name": "amazonConnector",
+        "checkboxText": "Push the Amazon Consent Signal to the dataLayer",
+        "simpleValueType": true,
+        "defaultValue": false,
+        "help": "For returning visitors, pushes a fitconsent_amazon_consent event with amzn_ad_storage, amzn_user_data and amzn_country_code before other tags fire. Map these Data Layer Variables into the Amazon Ad Tag template's consent fields. Also turn on the Amazon connector in the FitConsent dashboard, so the banner sends new choices."
+      }
+    ],
+    "enablingConditions": [
+      {
+        "paramName": "tagType",
+        "paramValue": "BANNER_LOADER",
+        "type": "NOT_EQUALS"
+      }
+    ]
+  },
+  {
+    "type": "GROUP",
     "name": "advancedGroup",
     "displayName": "Advanced: tag mode",
     "groupStyle": "ZIPPY_CLOSED",
@@ -275,6 +306,7 @@ ___TEMPLATE_PARAMETERS___
 ___SANDBOXED_JS_FOR_WEB_TEMPLATE___
 
 const callInWindow = require('callInWindow');
+const copyFromWindow = require('copyFromWindow');
 const createQueue = require('createQueue');
 const encodeUriComponent = require('encodeUriComponent');
 const getCookieValues = require('getCookieValues');
@@ -300,12 +332,30 @@ const CONSENT_TYPES = [
   'functionality_storage',
   'personalization_storage'
 ];
-// Must stay in sync with CATEGORY_GCM_MAP in src/app/api/banner/route.ts.
+// Bit order of the cookie's `gcm` field: the Google state the banner applied (Track C10,
+// custom categories and mappings). Never reorder. Must match GCM_SIGNAL_BITS in
+// src/lib/consent/custom-categories.ts.
+const GCM_SIGNAL_BITS = [
+  'ad_storage',
+  'ad_user_data',
+  'ad_personalization',
+  'analytics_storage',
+  'functionality_storage',
+  'personalization_storage'
+];
+// Default category mapping, for cookies written before the banner stored `gcm`.
+// Must stay in sync with DEFAULT_CATEGORY_SIGNALS in src/lib/consent/custom-categories.ts.
 const CATEGORY_GCM_MAP = {
   analytics: ['analytics_storage'],
   marketing: ['ad_storage', 'ad_user_data', 'ad_personalization'],
   preferences: ['functionality_storage', 'personalization_storage']
 };
+
+// US states that require honouring Global Privacy Control as an opt-out of sale/sharing and
+// targeted ads. Must stay in sync with src/lib/consent/gpc.ts and the Drupal module.
+const GPC_MANDATORY_REGIONS = ['US-CA', 'US-CO', 'US-CT', 'US-DE', 'US-MD', 'US-MN',
+  'US-MT', 'US-NE', 'US-NH', 'US-NJ', 'US-OR', 'US-TX'];
+const GPC_DENIED_TYPES = ['ad_storage', 'ad_user_data', 'ad_personalization'];
 
 // 1. Developer ID: first statement, unconditional.
 gtagSet(DEVELOPER_ID, true);
@@ -346,13 +396,75 @@ const consentFromChoices = (choices) => {
   return state;
 };
 
-const readStoredChoices = () => {
+// The Google state the banner stored as a bitmask (1 = ad_storage, 2 = ad_user_data, ...).
+// Sandboxed JS has no bitwise helpers, so the bits are read with division.
+const consentFromMask = (mask) => {
+  const state = {};
+  let rest = mask;
+  GCM_SIGNAL_BITS.forEach(type => {
+    const bit = rest % 2;
+    state[type] = bit === 1 ? 'granted' : 'denied';
+    rest = (rest - bit) / 2;
+  });
+  return state;
+};
+
+// The stored cookie ({choices, geo, gcm}), or undefined.
+const readStoredConsent = () => {
   const values = getCookieValues(COOKIE_NAME);
   if (!values || values.length === 0) return undefined;
   // Sandboxed JS has no try/catch; GTM's JSON.parse returns undefined on invalid input.
   const parsed = JSON.parse(values[0]);
   if (!parsed || typeof parsed.choices !== 'object' || !parsed.choices) return undefined;
-  return parsed.choices;
+  return parsed;
+};
+
+const copyState = (state) => {
+  const out = { security_storage: 'granted' };
+  CONSENT_TYPES.forEach(type => { out[type] = state[type]; });
+  return out;
+};
+
+const withGpc = (state) => {
+  const out = copyState(state);
+  GPC_DENIED_TYPES.forEach(type => { out[type] = 'denied'; });
+  return out;
+};
+
+// The state a region gets: subdivision row, then country row, then the global default.
+const resolveRegion = (rules, globalState, code) => {
+  const candidates = [code, code.split('-')[0]];
+  for (let i = 0; i < candidates.length; i++) {
+    for (let j = 0; j < rules.length; j++) {
+      if (rules[j].regions.indexOf(candidates[i]) !== -1) return rules[j].state;
+    }
+  }
+  return globalState;
+};
+
+// Global Privacy Control (Track C4): each mandatory state keeps its normal defaults with the
+// advertising types denied. Those states leave the rows that list them and are regrouped,
+// so no region is in two default commands.
+const rulesWithGpc = (rules, globalState) => {
+  const groups = [];
+  GPC_MANDATORY_REGIONS.forEach(code => {
+    const state = withGpc(resolveRegion(rules, globalState, code));
+    const key = JSON.stringify(state);
+    let group;
+    groups.forEach(g => { if (g.key === key) group = g; });
+    if (!group) {
+      group = { key: key, regions: [], state: state };
+      groups.push(group);
+    }
+    group.regions.push(code);
+  });
+  const out = [];
+  rules.forEach(rule => {
+    const regions = rule.regions.filter(code => GPC_MANDATORY_REGIONS.indexOf(code) === -1);
+    if (regions.length > 0) out.push({ regions: regions, state: rule.state });
+  });
+  groups.forEach(g => { out.push({ regions: g.regions, state: g.state }); });
+  return out;
 };
 
 // Receives Google consent states from the banner (window.fitconsent.onConsentChange) and
@@ -373,32 +485,36 @@ const onConsentChange = (consent) => {
 const applyDefaults = () => {
   const waitForUpdate = makeNumber(data.waitForUpdate);
   const rows = data.regionSettings || [];
-  let hasGlobalDefault = false;
-  let globalAdStorage = 'denied';
-  let globalAnalyticsStorage = 'denied';
+  const gpc = copyFromWindow('navigator.globalPrivacyControl') === true;
 
-  // 2. One default command per region row.
+  // Region rows and the global row (blank region). Without a global row, everything is denied.
+  let rules = [];
+  let globalState = allDenied();
   rows.forEach(row => {
     const state = { security_storage: 'granted' };
     CONSENT_TYPES.forEach(type => { state[type] = toState(row[type]); });
     const regions = splitRegions(row.region);
     if (regions.length > 0) {
-      state.region = regions;
+      rules.push({ regions: regions, state: state });
     } else {
-      hasGlobalDefault = true;
-      globalAdStorage = state.ad_storage;
-      globalAnalyticsStorage = state.analytics_storage;
+      globalState = state;
     }
+  });
+  if (gpc) rules = rulesWithGpc(rules, globalState);
+
+  // 2. One default command per region row, then the global default.
+  rules.forEach(rule => {
+    const state = copyState(rule.state);
+    state.region = rule.regions;
     if (waitForUpdate > 0) state.wait_for_update = waitForUpdate;
     setDefaultConsentState(state);
   });
-
-  // Fallback: deny everything outside the listed regions.
-  if (!hasGlobalDefault) {
-    const fallback = allDenied();
-    if (waitForUpdate > 0) fallback.wait_for_update = waitForUpdate;
-    setDefaultConsentState(fallback);
-  }
+  const globalCmd = copyState(globalState);
+  if (waitForUpdate > 0) globalCmd.wait_for_update = waitForUpdate;
+  setDefaultConsentState(globalCmd);
+  // UET has no region parameter: a GPC browser starts with ads denied everywhere.
+  const globalAdStorage = gpc ? 'denied' : globalState.ad_storage;
+  const globalAnalyticsStorage = globalState.analytics_storage;
 
   // 3. Optional gtag settings.
   gtagSet('ads_data_redaction', data.adsDataRedaction === true);
@@ -408,12 +524,41 @@ const applyDefaults = () => {
   const uetq = createQueue('uetq');
   uetq('consent', 'default', { 'ad_storage': globalAdStorage, 'analytics_storage': globalAnalyticsStorage });
 
-  // 4. Returning visitors: apply the stored choice before any other tag fires.
-  const choices = readStoredChoices();
-  if (choices) updateConsentState(consentFromChoices(choices));
+  // TikTok Pixel connector: hold events until the visitor chooses (the banner grants or revokes).
+  const ttq = data.tiktokConnector === true ? createQueue('ttq') : null;
+  if (ttq) {
+    ttq(['holdConsent']);
+    setInWindow('fitconsentTikTokHeld', true, true);
+  }
 
-  // 6. Tell the banner the defaults and the returning-visitor update came from GTM.
+  // 4. Returning visitors: apply the stored choice before any other tag fires.
+  const stored = readStoredConsent();
+  if (stored) {
+    const validMask = typeof stored.gcm === 'number' && stored.gcm >= 0 && stored.gcm < 64 && stored.gcm % 1 === 0;
+    const restored = validMask ? consentFromMask(stored.gcm) : consentFromChoices(stored.choices);
+    // GPC in a state that requires it: advertising stays denied (the banner saves the region code).
+    const regionCode = stored.geo ? stored.geo.regionCode : undefined;
+    if (gpc && GPC_MANDATORY_REGIONS.indexOf(regionCode) !== -1) {
+      GPC_DENIED_TYPES.forEach(type => { restored[type] = 'denied'; });
+    }
+    updateConsentState(restored);
+    // Other platforms, from the same restored state, after the Google update.
+    if (ttq) ttq([restored.ad_storage === 'granted' ? 'grantConsent' : 'revokeConsent']);
+    if (data.amazonConnector === true) {
+      const countryCode = regionCode ? regionCode.split('-')[0] : '';
+      createQueue('dataLayer')({
+        'event': 'fitconsent_amazon_consent',
+        'amzn_ad_storage': restored.ad_storage === 'granted' ? 'GRANTED' : 'DENIED',
+        'amzn_user_data': restored.ad_user_data === 'granted' ? 'GRANTED' : 'DENIED',
+        'amzn_country_code': countryCode
+      });
+    }
+  }
+
+  // 6. Tell the banner the defaults and the returning-visitor update came from GTM,
+  // and that this version restores the stored `gcm` state (Track C10).
   setInWindow('fitconsentGtmManaged', true, true);
+  setInWindow('fitconsentRestoredGcm', true, true);
 };
 
 if (setsDefaults && consentModeEnabled) {
@@ -723,6 +868,81 @@ ___WEB_PERMISSIONS___
                   { "type": 1, "string": "execute" }
                 ],
                 "mapValue": [
+                  { "type": 1, "string": "fitconsentRestoredGcm" },
+                  { "type": 8, "boolean": true },
+                  { "type": 8, "boolean": true },
+                  { "type": 8, "boolean": false }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  { "type": 1, "string": "key" },
+                  { "type": 1, "string": "read" },
+                  { "type": 1, "string": "write" },
+                  { "type": 1, "string": "execute" }
+                ],
+                "mapValue": [
+                  { "type": 1, "string": "ttq" },
+                  { "type": 8, "boolean": true },
+                  { "type": 8, "boolean": true },
+                  { "type": 8, "boolean": false }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  { "type": 1, "string": "key" },
+                  { "type": 1, "string": "read" },
+                  { "type": 1, "string": "write" },
+                  { "type": 1, "string": "execute" }
+                ],
+                "mapValue": [
+                  { "type": 1, "string": "fitconsentTikTokHeld" },
+                  { "type": 8, "boolean": true },
+                  { "type": 8, "boolean": true },
+                  { "type": 8, "boolean": false }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  { "type": 1, "string": "key" },
+                  { "type": 1, "string": "read" },
+                  { "type": 1, "string": "write" },
+                  { "type": 1, "string": "execute" }
+                ],
+                "mapValue": [
+                  { "type": 1, "string": "dataLayer" },
+                  { "type": 8, "boolean": true },
+                  { "type": 8, "boolean": true },
+                  { "type": 8, "boolean": false }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  { "type": 1, "string": "key" },
+                  { "type": 1, "string": "read" },
+                  { "type": 1, "string": "write" },
+                  { "type": 1, "string": "execute" }
+                ],
+                "mapValue": [
+                  { "type": 1, "string": "navigator.globalPrivacyControl" },
+                  { "type": 8, "boolean": true },
+                  { "type": 8, "boolean": false },
+                  { "type": 8, "boolean": false }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  { "type": 1, "string": "key" },
+                  { "type": 1, "string": "read" },
+                  { "type": 1, "string": "write" },
+                  { "type": 1, "string": "execute" }
+                ],
+                "mapValue": [
                   { "type": 1, "string": "fitconsent.onConsentChange" },
                   { "type": 8, "boolean": false },
                   { "type": 8, "boolean": false },
@@ -774,18 +994,9 @@ scenarios:
 
     runCode(baseData);
 
+    // Region rows first, the global default last.
     assertThat(defaults.length).isEqualTo(2);
     assertThat(defaults[0]).isEqualTo({
-      security_storage: 'granted',
-      ad_storage: 'denied',
-      analytics_storage: 'denied',
-      ad_user_data: 'denied',
-      ad_personalization: 'denied',
-      functionality_storage: 'denied',
-      personalization_storage: 'denied',
-      wait_for_update: 500
-    });
-    assertThat(defaults[1]).isEqualTo({
       security_storage: 'granted',
       ad_storage: 'granted',
       analytics_storage: 'granted',
@@ -794,6 +1005,16 @@ scenarios:
       functionality_storage: 'granted',
       personalization_storage: 'granted',
       region: ['US', 'CA-ON'],
+      wait_for_update: 500
+    });
+    assertThat(defaults[1]).isEqualTo({
+      security_storage: 'granted',
+      ad_storage: 'denied',
+      analytics_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      functionality_storage: 'denied',
+      personalization_storage: 'denied',
       wait_for_update: 500
     });
 - name: Falls back to all denied when no global row is defined
@@ -849,6 +1070,28 @@ scenarios:
       functionality_storage: 'granted',
       personalization_storage: 'granted'
     });
+- name: Returning visitor's stored Google state wins over the category map
+  code: |-
+    const updates = [];
+    mock('getCookieValues', function(name) {
+      // gcm 9 = ad_storage (1) + analytics_storage (8), from a custom category mapping.
+      return name === 'fitconsent_given' ? ['{"choices":{"necessary":true,"measurement":true,"analytics":false,"marketing":false},"gcm":9,"geo":{"regionCode":"FR-IDF"}}'] : [];
+    });
+    mock('updateConsentState', function(state) { updates.push(state); });
+    mock('injectScript', function(url, onSuccess) { onSuccess(); });
+
+    runCode(baseData);
+
+    assertThat(updates.length).isEqualTo(1);
+    assertThat(updates[0]).isEqualTo({
+      ad_storage: 'granted',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      analytics_storage: 'granted',
+      functionality_storage: 'denied',
+      personalization_storage: 'denied'
+    });
+    assertApi('setInWindow').wasCalledWith('fitconsentRestoredGcm', true, true);
 - name: Invalid cookie is ignored
   code: |-
     mock('getCookieValues', ['not json']);
@@ -912,7 +1155,93 @@ scenarios:
 
     assertThat(uetCalls.length).isEqualTo(1);
     assertThat(uetCalls[0]).isEqualTo({ name: 'uetq', cmd: 'consent', kind: 'default', state: { ad_storage: 'denied', analytics_storage: 'denied' } });
+- name: GPC denies advertising defaults in the US states that require it
+  code: |-
+    const defaults = [];
+    mock('setDefaultConsentState', function(state) { defaults.push(state); });
+    mock('copyFromWindow', function(key) { return key === 'navigator.globalPrivacyControl' ? true : undefined; });
+    mock('injectScript', function(url, onSuccess) { onSuccess(); });
+
+    runCode(baseData);
+
+    // US and CA-ON keep their row; the 12 GPC states get their own default, then the global one.
+    assertThat(defaults.length).isEqualTo(3);
+    assertThat(defaults[0].region).isEqualTo(['US', 'CA-ON']);
+    assertThat(defaults[1].region).isEqualTo(['US-CA', 'US-CO', 'US-CT', 'US-DE', 'US-MD', 'US-MN', 'US-MT', 'US-NE', 'US-NH', 'US-NJ', 'US-OR', 'US-TX']);
+    assertThat(defaults[1].ad_storage).isEqualTo('denied');
+    assertThat(defaults[1].ad_user_data).isEqualTo('denied');
+    assertThat(defaults[1].ad_personalization).isEqualTo('denied');
+    assertThat(defaults[1].analytics_storage).isEqualTo('granted');
+    assertThat(defaults[1].wait_for_update).isEqualTo(500);
+    assertThat(defaults[2].region).isUndefined();
+- name: GPC keeps advertising denied for a returning visitor from a GPC state
+  code: |-
+    const updates = [];
+    mock('copyFromWindow', function(key) { return key === 'navigator.globalPrivacyControl' ? true : undefined; });
+    mock('getCookieValues', function(name) {
+      return name === 'fitconsent_given' ? ['{"choices":{"analytics":true,"marketing":true},"geo":{"regionCode":"US-CA"}}'] : [];
+    });
+    mock('updateConsentState', function(state) { updates.push(state); });
+    mock('injectScript', function(url, onSuccess) { onSuccess(); });
+
+    runCode(baseData);
+
+    assertThat(updates[0].ad_storage).isEqualTo('denied');
+    assertThat(updates[0].ad_personalization).isEqualTo('denied');
+    assertThat(updates[0].analytics_storage).isEqualTo('granted');
+- name: Without GPC a returning visitor's marketing choice is restored
+  code: |-
+    const updates = [];
+    mock('getCookieValues', function(name) {
+      return name === 'fitconsent_given' ? ['{"choices":{"analytics":true,"marketing":true},"geo":{"regionCode":"US-CA"}}'] : [];
+    });
+    mock('updateConsentState', function(state) { updates.push(state); });
+    mock('injectScript', function(url, onSuccess) { onSuccess(); });
+
+    runCode(baseData);
+
+    assertThat(updates[0].ad_storage).isEqualTo('granted');
+- name: TikTok and Amazon connectors hold, then restore a returning visitor
+  code: |-
+    const queued = [];
+    mock('createQueue', function(name) {
+      return function(a) { queued.push({ name: name, value: a }); };
+    });
+    mock('getCookieValues', function(name) {
+      return name === 'fitconsent_given' ? ['{"choices":{"analytics":true,"marketing":true},"geo":{"regionCode":"FR-IDF"}}'] : [];
+    });
+    mock('injectScript', function(url, onSuccess) { onSuccess(); });
+
+    const data = JSON.parse(JSON.stringify(baseData));
+    data.tiktokConnector = true;
+    data.amazonConnector = true;
+    runCode(data);
+
+    const ttq = queued.filter(function(q) { return q.name === 'ttq'; });
+    assertThat(ttq.length).isEqualTo(2);
+    assertThat(ttq[0].value).isEqualTo(['holdConsent']);
+    assertThat(ttq[1].value).isEqualTo(['grantConsent']);
+    assertApi('setInWindow').wasCalledWith('fitconsentTikTokHeld', true, true);
+    const dl = queued.filter(function(q) { return q.name === 'dataLayer'; });
+    assertThat(dl.length).isEqualTo(1);
+    assertThat(dl[0].value).isEqualTo({
+      event: 'fitconsent_amazon_consent',
+      amzn_ad_storage: 'GRANTED',
+      amzn_user_data: 'GRANTED',
+      amzn_country_code: 'FR'
+    });
+- name: Connectors are off by default
+  code: |-
+    const names = [];
+    mock('createQueue', function(name) { names.push(name); return function() {}; });
+    mock('injectScript', function(url, onSuccess) { onSuccess(); });
+
+    runCode(baseData);
+
+    assertThat(names).isEqualTo(['uetq']);
+    assertApi('setInWindow').wasNotCalledWith('fitconsentTikTokHeld', true, true);
 setup: |-
+  const JSON = require('JSON');
   const baseData = {
     websiteId: 'site123',
     tagType: 'ALL_IN_ONE',
@@ -932,3 +1261,5 @@ ___NOTES___
 Created on 8/18/2025, 01:51:16 PM
 Version 2 (2026-10): region-specific defaults, developer ID via gtagSet, wait_for_update,
 ads_data_redaction, url_passthrough, consent restore for returning visitors, single all-in-one tag.
+Global Privacy Control (2026-11): with GPC, advertising stays denied in the US states that require it.
+Other platforms (2026-11): optional TikTok hold/restore and Amazon Consent Signal dataLayer push.
